@@ -8,7 +8,8 @@ import omni.kit.ui
 import omni.kit.app
 from omni import ui
 
-from stride.simulator.backends import ROS2Backend
+# from stride.simulator.backends import ROS2Backend
+from stride.simulator.backends import ROS2OmniBackend
 
 from stride.simulator.interfaces.stride_sim_interface import StrideInterface
 
@@ -71,7 +72,8 @@ class StrideSimulatorExtension(omni.ext.IExt):
                         self._go1_config = Go1Config()
 
                         self._go1_config.backends = [
-                            ROS2Backend(self._go1_config.vehicle_name)
+                            # ROS2Backend(self._go1_config.vehicle_name)
+                            ROS2OmniBackend({})
                         ]
 
                         self._go1 = Go1(
