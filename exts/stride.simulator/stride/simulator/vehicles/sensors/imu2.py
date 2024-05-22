@@ -9,6 +9,7 @@ from omni.isaac.sensor import _sensor
 
 import numpy as np
 
+
 class Imu2(Sensor):
     """
     The class that implements the Imu sensor. This class inherits the base class Sensor.
