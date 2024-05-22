@@ -2,6 +2,7 @@
 sensor: 
   imu:
     update_frequency: 250
+    prim_path: /World/Go1/imu_link/Imu_Sensor
 
   lidar:
     update_frequency: 25

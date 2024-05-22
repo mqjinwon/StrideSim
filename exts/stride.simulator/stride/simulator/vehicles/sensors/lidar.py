@@ -40,11 +40,13 @@ class Lidar(Sensor):
             "points": [],
         }
 
+        self.generate_lidar_sensor()
+
         self.lidar_interface = (
             _range_sensor.acquire_lidar_sensor_interface()
         )  # Used to interact with the LIDAR
 
-        self.lidar_flag_ = False
+    def generate_lidar_sensor(self):
 
         my_world = World.instance()
 
@@ -69,34 +71,9 @@ class Lidar(Sensor):
     @Sensor.update_at_frequency
     def update(self, state: State, dt: float):
 
-        if self.lidar_flag_ is True:
-            pointcloud = self.lidar_interface.get_point_cloud_data(
-                self.config.get("prim_path")
-            )
-            # print(pointcloud)
-            self._state["points"] = pointcloud
-
-        else:
-            my_world = World.instance()
-
-            ## check there is world
-            if my_world is None:
-                pass
-            else:
-                # self._lidar = my_world.scene.add(
-                #     RotatingLidarPhysX(
-                #         prim_path=self.config.get("prim_path"),
-                #         name="range_sensor",
-                #         rotation_dt=10,
-                #     )
-                # )
-                # self._lidar.set_fov([360, 30])
-                # self._lidar.set_resolution([0.4, 0.4])
-                # self._lidar.set_valid_range([0.1, 6])
-                # self._lidar.enable_visualization(
-                #     high_lod=True, draw_points=False, draw_lines=False
-                # )
-
-                self.lidar_flag_ = True
+        pointcloud = self.lidar_interface.get_point_cloud_data(
+            self.config.get("prim_path")
+        )
+        self._state["points"] = pointcloud
 
         return self._state

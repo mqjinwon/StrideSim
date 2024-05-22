@@ -10,6 +10,7 @@ from stride.simulator.vehicles.quadrupedrobot.quadrupedrobot import (
 # from stride.simulator.backends import LoggerBackend
 from stride.simulator.params import ROBOTS
 from stride.simulator.vehicles.sensors.imu import Imu
+from stride.simulator.vehicles.sensors.imu2 import Imu2
 
 from stride.simulator.vehicles.sensors.lidar import Lidar
 
@@ -51,7 +52,7 @@ class Go1Config(QuadrupedRobotConfig):
 
         # The default sensors for a Go1
         self.sensors = [
-            "imu",
+            "imu2",
             "lidar",
         ]  # pylint: disable=use-list-literal FIXME
 
@@ -83,6 +84,9 @@ class Go1(QuadrupedRobot):
 
         if "imu" in config.sensors:
             self._sensors.append(Imu(config.config["sensor"]["imu"]))
+
+        if "imu2" in config.sensors:
+            self._sensors.append(Imu2(config.config["sensor"]["imu"]))
 
         if "lidar" in config.sensors:
             # If we use lidar sensor, make xform path
