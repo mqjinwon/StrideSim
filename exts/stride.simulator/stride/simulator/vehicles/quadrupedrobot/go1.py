@@ -11,12 +11,14 @@ from stride.simulator.vehicles.quadrupedrobot.quadrupedrobot import (
 from stride.simulator.params import ROBOTS
 from stride.simulator.vehicles.sensors.imu import Imu
 
-# from stride.simulator.vehicles.sensors.lidar import Lidar
+from stride.simulator.vehicles.sensors.lidar import Lidar
 
 from stride.simulator.vehicles.controllers.anymal_controller import AnyamlController
 
 import yaml
 import os
+
+from pxr import UsdGeom
 
 
 class Go1Config(QuadrupedRobotConfig):
@@ -49,8 +51,8 @@ class Go1Config(QuadrupedRobotConfig):
 
         # The default sensors for a Go1
         self.sensors = [
-            Imu(self.config["sensor"]["imu"]),
-            # Lidar(self.config["sensor"]["lidar"]),
+            "imu",
+            "lidar",
         ]  # pylint: disable=use-list-literal FIXME
 
         # The backends for actually sending commands to the vehicle.
@@ -78,6 +80,17 @@ class Go1(QuadrupedRobot):
         )
 
         self.controller = AnyamlController()
+
+        if "imu" in config.sensors:
+            self._sensors.append(Imu(config.config["sensor"]["imu"]))
+
+        if "lidar" in config.sensors:
+            # If we use lidar sensor, make xform path
+            parent_path = "/World/Go1"
+            lidar_path = f"{parent_path}/lidar"
+            UsdGeom.Xform.Define(self._current_stage, lidar_path)
+
+            self._sensors.append(Lidar(config.config["sensor"]["lidar"]))
 
     def update_sensors(self, dt: float):
         """Callback that is called at every physics steps and will call the sensor.update method to generate new

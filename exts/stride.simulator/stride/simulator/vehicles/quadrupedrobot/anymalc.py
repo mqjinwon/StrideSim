@@ -48,8 +48,8 @@ class AnymalCConfig(QuadrupedRobotConfig):
 
         # The default sensors for a Anymal C
         self.sensors = [
-            Imu(self.config["sensor"]["imu"]),
-            Lidar(self.config["sensor"]["lidar"]),
+            "imu",
+            "lidar",
         ]  # pylint: disable=use-list-literal FIXME
 
         # The backends for actually sending commands to the vehicle.
@@ -77,6 +77,12 @@ class AnymalC(QuadrupedRobot):
         )
 
         self.controller = AnyamlController()
+
+        if "imu" in config.sensors:
+            self._sensors.append(Imu(config.config["sensor"]["imu"]))
+
+        if "lidar" in config.sensors:
+            self._sensors.append(Lidar(config.config["sensor"]["lidar"]))
 
     def update_sensors(self, dt: float):
         """Callback that is called at every physics steps and will call the sensor.update method to generate new

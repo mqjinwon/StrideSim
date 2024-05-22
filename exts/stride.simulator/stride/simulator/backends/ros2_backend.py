@@ -4,11 +4,6 @@ import numpy as np
 import struct
 
 from stride.simulator.backends.backend import Backend
-from omni.isaac.core.utils.extensions import disable_extension, enable_extension
-
-# # Perform some checks, because Isaac Sim some times does not play nice when using ROS/ROS2
-disable_extension("omni.isaac.ros_bridge")
-enable_extension("omni.isaac.ros2_bridge")
 
 # Inform the user that now we are actually import the ROS2 dependencies
 # Note: we are performing the imports here to make sure that ROS2 extension was load correctly

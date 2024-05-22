@@ -1,6 +1,7 @@
 # The vehicle interface
 from stride.simulator.vehicles.vehicle import Vehicle
-from stride.simulator.interfaces.stride_sim_interface import StrideInterface
+
+# from stride.simulator.interfaces.stride_sim_interface import StrideInterface
 
 import omni
 from omni.isaac.core.utils.rotations import (
@@ -72,14 +73,7 @@ class QuadrupedRobot(Vehicle):
         super().__init__(stage_prefix, usd_file, init_pos, init_orientation)
 
         # 2. Initialize all the vehicle sensors
-        self._sensors = config.sensors
-        for sensor in self._sensors:
-            sensor.set_spherical_coordinate(
-                StrideInterface().latitude,
-                StrideInterface().longitude,
-                StrideInterface().altitude,
-            )
-            pass
+        self._sensors = []
 
         # Add callbacks to the physics engine to update each sensor at every timestep
         # and let the sensor decide depending on its internal update rate whether to generate new data

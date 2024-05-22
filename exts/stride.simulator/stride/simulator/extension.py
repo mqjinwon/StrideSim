@@ -7,6 +7,8 @@ import omni.usd
 import omni.kit.ui
 import omni.kit.app
 from omni import ui
+from omni.isaac.core.utils.extensions import disable_extension
+from omni.isaac.core.utils.extensions import enable_extension
 
 # from stride.simulator.backends import ROS2Backend
 from stride.simulator.backends import ROS2OmniBackend
@@ -15,13 +17,13 @@ from stride.simulator.interfaces.stride_sim_interface import StrideInterface
 
 # from stride.simulator.vehicles.quadrupedrobot.anymalc import AnymalC, AnymalCConfig
 
-from stride.simulator.vehicles.quadrupedrobot.go1 import Go1Config
-
-from stride.simulator.vehicles.quadrupedrobot.go1 import Go1
-
 from stride.simulator.params import SIMULATION_ENVIRONMENTS
 
 import asyncio
+
+# # Perform some checks, because Isaac Sim some times does not play nice when using ROS/ROS2
+disable_extension("omni.isaac.ros_bridge")
+enable_extension("omni.isaac.ros2_bridge")
 
 
 # Functions and vars are available to other extension as usual in python: `example.python_ext.some_public_function(x)`
@@ -67,6 +69,15 @@ class StrideSimulatorExtension(omni.ext.IExt):
                     label.text = "Load environment"
 
                 def on_simulation():
+
+                    # FIXME: 왜 이 부분이 위에서 정의되면 자동으로 class __init__을 호출하는 지 확인해야함
+                    from stride.simulator.vehicles.quadrupedrobot.go1 import (  # pylint: disable=import-outside-toplevel
+                        Go1Config,
+                    )
+                    from stride.simulator.vehicles.quadrupedrobot.go1 import (  # pylint: disable=import-outside-toplevel
+                        Go1,
+                    )
+
                     async def respawn():
 
                         self._go1_config = Go1Config()

@@ -46,6 +46,22 @@ class Lidar(Sensor):
 
         self.lidar_flag_ = False
 
+        my_world = World.instance()
+
+        self._lidar = my_world.scene.add(
+            RotatingLidarPhysX(
+                prim_path=self.config.get("prim_path"),
+                name="range_sensor",
+                rotation_dt=10,
+            )
+        )
+        self._lidar.set_fov([360, 30])
+        self._lidar.set_resolution([0.4, 0.4])
+        self._lidar.set_valid_range([0.1, 6])
+        self._lidar.enable_visualization(
+            high_lod=True, draw_points=False, draw_lines=False
+        )
+
     @property
     def state(self):
         return self._state
@@ -67,19 +83,19 @@ class Lidar(Sensor):
             if my_world is None:
                 pass
             else:
-                self._lidar = my_world.scene.add(
-                    RotatingLidarPhysX(
-                        prim_path=self.config.get("prim_path"),
-                        name="range_sensor",
-                        rotation_dt=10,
-                    )
-                )
-                self._lidar.set_fov([360, 30])
-                self._lidar.set_resolution([0.4, 0.4])
-                self._lidar.set_valid_range([0.1, 6])
-                self._lidar.enable_visualization(
-                    high_lod=True, draw_points=False, draw_lines=False
-                )
+                # self._lidar = my_world.scene.add(
+                #     RotatingLidarPhysX(
+                #         prim_path=self.config.get("prim_path"),
+                #         name="range_sensor",
+                #         rotation_dt=10,
+                #     )
+                # )
+                # self._lidar.set_fov([360, 30])
+                # self._lidar.set_resolution([0.4, 0.4])
+                # self._lidar.set_valid_range([0.1, 6])
+                # self._lidar.enable_visualization(
+                #     high_lod=True, draw_points=False, draw_lines=False
+                # )
 
                 self.lidar_flag_ = True
 

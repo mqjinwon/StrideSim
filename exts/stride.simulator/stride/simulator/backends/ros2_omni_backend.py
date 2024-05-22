@@ -7,46 +7,113 @@ import omni.graph.core as og
 
 
 class ROS2OmniBackend(Backend):
+    """
+    A class representing the ROS2 Omni Backend.
+
+    This backend is responsible for initializing and configuring the ROS2 integration
+    with the Omni platform.
+
+    Args:
+        prim_path (dict): A dictionary containing the paths for the lidar, IMU, and controller.
+
+    Attributes:
+        _prim_path (dict): The initialized primary path dictionary.
+        keys (og.Controller.Keys): The keys for the OmniGraph controller.
+
+    Methods:
+        prim_path_init: Initializes the primary path dictionary with default values.
+        initialize_omnigraph: Sets up the OmniGraph controller and configures the graph.
+
+    """
+
     def __init__(self, prim_path: dict):
         super().__init__()
 
-        self._prim_path = prim_path
+        self._prim_path = self.prim_path_init(prim_path)
         self.keys = og.Controller.Keys
         self.initialize_omnigraph()
 
-    def initialize_omnigraph(self):
+    def prim_path_init(self, prim_path: dict):
+        """
+        Initializes the primary path dictionary with default values.
 
+        Args:
+            prim_path (dict): The primary path dictionary.
+
+        Returns:
+            dict: The initialized primary path dictionary.
+
+        """
+        if not "Lidar_path" in prim_path.keys():
+            prim_path["Lidar_path"] = "/World/Go1/lidar/lidar_PhysX"
+
+        if not "Imu_path" in prim_path.keys():
+            prim_path["Imu_path"] = "/World/Go1/imu_link/Imu_Sensor"
+
+        if not "Controller_path" in prim_path.keys():
+            prim_path["Controller_path"] = "/controller"
+
+        return prim_path
+
+    def initialize_omnigraph(self):
+        """
+        Sets up the OmniGraph controller and configures the graph.
+
+        """
         # setup graph
         og.Controller.edit(
-            {"graph_path": "/controller_graph", "evaluator_name": "execution"},
+            {"graph_path": "/action_graph", "evaluator_name": "execution"},
             {
                 self.keys.CREATE_NODES: [
                     ("PTick", "omni.graph.action.OnPlaybackTick"),
                     ("Sim_Time", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
+                    ("Ros_Context", "omni.isaac.ros2_bridge.ROS2Context"),
+                    ("Imu_Read", "omni.isaac.sensor.IsaacReadIMU"),
+                    ("Ros2_Imu_Pub", "omni.isaac.ros2_bridge.ROS2PublishImu"),
+                    ("Lidar_Read", "omni.isaac.range_sensor.IsaacReadLidarPointCloud"),
+                    ("Ros2_Lidar_Pub", "omni.isaac.ros2_bridge.ROS2PublishPointCloud"),
                 ],
                 self.keys.SET_VALUES: [
-                    # ("A.inputs:key", "A"),
-                    # ("D.inputs:key", "D"),
-                    # ("OnTick.inputs:onlyPlayback", True),  # only tick when simulator is playing
-                    # ("NegOne.inputs:value", -1),
-                    # ("CubeWrite.inputs:name", "size"),
-                    # ("CubeWrite.inputs:primPath", "/Cube"),
-                    # ("CubeWrite.inputs:usePath", True),
-                    # ("CubeRead.inputs:name", "size"),
-                    # ("CubeRead.inputs:primPath", "/Cube"),
-                    # ("CubeRead.inputs:usePath", True),
+                    ("Ros_Context.inputs:useDomainIDEnvVar", False),
+                    ("Imu_Read.inputs:imuPrim", self._prim_path["Imu_path"]),
+                    ("Lidar_Read.inputs:lidarPrim", self._prim_path["Lidar_path"]),
+                    ("Imu_Read.inputs:readGravity", True),
+                    ("Ros2_Imu_Pub.inputs:frameId", "sim_imu"),
+                    ("Ros2_Imu_Pub.inputs:topicName", "imu"),
+                    ("Ros2_Lidar_Pub.inputs:frameId", "sim_Lidar"),
+                    ("Ros2_Lidar_Pub.inputs:topicName", "point_cloud"),
                 ],
                 self.keys.CONNECT: [
-                    # ("OnTick.outputs:tick", "CubeWrite.inputs:execIn"),
-                    # ("A.outputs:isPressed", "ToDouble1.inputs:value"),
-                    # ("D.outputs:isPressed", "ToDouble2.inputs:value"),
-                    # ("ToDouble2.outputs:converted", "Negate.inputs:a"),
-                    # ("NegOne.inputs:value", "Negate.inputs:b"),
-                    # ("ToDouble1.outputs:converted", "DeltaAdd.inputs:a"),
-                    # ("Negate.outputs:product", "DeltaAdd.inputs:b"),
-                    # ("DeltaAdd.outputs:sum", "SizeAdd.inputs:a"),
-                    # ("CubeRead.outputs:value", "SizeAdd.inputs:b"),
-                    # ("SizeAdd.outputs:sum", "CubeWrite.inputs:value"),
+                    ("PTick.outputs:tick", "Imu_Read.inputs:execIn"),
+                    ("Ros_Context.outputs:context", "Ros2_Imu_Pub.inputs:context"),
+                    ("Imu_Read.outputs:execOut", "Ros2_Imu_Pub.inputs:execIn"),
+                    (
+                        "Imu_Read.outputs:angVel",
+                        "Ros2_Imu_Pub.inputs:angularVelocity",
+                    ),
+                    (
+                        "Imu_Read.outputs:linAcc",
+                        "Ros2_Imu_Pub.inputs:linearAcceleration",
+                    ),
+                    (
+                        "Imu_Read.outputs:orientation",
+                        "Ros2_Imu_Pub.inputs:orientation",
+                    ),
+                    (
+                        "Sim_Time.outputs:simulationTime",
+                        "Ros2_Imu_Pub.inputs:timeStamp",
+                    ),
+                    ("PTick.outputs:tick", "Lidar_Read.inputs:execIn"),
+                    ("Ros_Context.outputs:context", "Ros2_Lidar_Pub.inputs:context"),
+                    ("Lidar_Read.outputs:execOut", "Ros2_Lidar_Pub.inputs:execIn"),
+                    (
+                        "Lidar_Read.outputs:data",
+                        "Ros2_Lidar_Pub.inputs:data",
+                    ),
+                    (
+                        "Sim_Time.outputs:simulationTime",
+                        "Ros2_Lidar_Pub.inputs:timeStamp",
+                    ),
                 ],
             },
         )
