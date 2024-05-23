@@ -19,6 +19,7 @@ from stride.simulator.vehicles.controllers.anymal_controller import AnyamlContro
 import yaml
 import os
 
+from pxr import Gf
 from pxr import UsdGeom
 
 
@@ -92,7 +93,16 @@ class Go1(QuadrupedRobot):
             # If we use lidar sensor, make xform path
             parent_path = "/World/Go1"
             lidar_path = f"{parent_path}/lidar"
-            UsdGeom.Xform.Define(self._current_stage, lidar_path)
+            lidar_xform = UsdGeom.Xform.Define(self._current_stage, lidar_path)
+
+            # Set the position of lidar_xform
+            translation_vector = Gf.Vec3d(0.0, 0.0, 0.1)
+
+            # Create a translation matrix
+            translation_matrix = Gf.Matrix4d().SetTranslate(translation_vector)
+
+            # Set the transformation matrix for the Xform
+            lidar_xform.AddTransformOp().Set(translation_matrix)
 
             self._sensors.append(Lidar(config.config["sensor"]["lidar"]))
 

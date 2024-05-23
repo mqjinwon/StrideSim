@@ -50,8 +50,8 @@ class ROS2OmniBackend(Backend):
         if not "Imu_path" in prim_path.keys():
             prim_path["Imu_path"] = "/World/Go1/imu_link/Imu_Sensor"
 
-        if not "Controller_path" in prim_path.keys():
-            prim_path["Controller_path"] = "/controller"
+        if not "TF_path" in prim_path.keys():
+            prim_path["TF_path"] = "/World/Go1"
 
         return prim_path
 
@@ -72,6 +72,7 @@ class ROS2OmniBackend(Backend):
                     ("Ros2_Imu_Pub", "omni.isaac.ros2_bridge.ROS2PublishImu"),
                     ("Lidar_Read", "omni.isaac.range_sensor.IsaacReadLidarPointCloud"),
                     ("Ros2_Lidar_Pub", "omni.isaac.ros2_bridge.ROS2PublishPointCloud"),
+                    ("Ros2_tf_pub", "omni.isaac.ros2_bridge.ROS2PublishTransformTree"),
                 ],
                 self.keys.SET_VALUES: [
                     ("Ros_Context.inputs:useDomainIDEnvVar", False),
@@ -80,8 +81,9 @@ class ROS2OmniBackend(Backend):
                     ("Imu_Read.inputs:readGravity", True),
                     ("Ros2_Imu_Pub.inputs:frameId", "sim_imu"),
                     ("Ros2_Imu_Pub.inputs:topicName", "imu"),
-                    ("Ros2_Lidar_Pub.inputs:frameId", "sim_Lidar"),
+                    ("Ros2_Lidar_Pub.inputs:frameId", "sim_lidar"),
                     ("Ros2_Lidar_Pub.inputs:topicName", "point_cloud"),
+                    ("Ros2_tf_pub.inputs:targetPrims", self._prim_path["TF_path"]),
                 ],
                 self.keys.CONNECT: [
                     ("PTick.outputs:tick", "Imu_Read.inputs:execIn"),
@@ -113,6 +115,12 @@ class ROS2OmniBackend(Backend):
                     (
                         "Sim_Time.outputs:simulationTime",
                         "Ros2_Lidar_Pub.inputs:timeStamp",
+                    ),
+                    ("PTick.outputs:tick", "Ros2_tf_pub.inputs:execIn"),
+                    ("Ros_Context.outputs:context", "Ros2_tf_pub.inputs:context"),
+                    (
+                        "Sim_Time.outputs:simulationTime",
+                        "Ros2_tf_pub.inputs:timeStamp",
                     ),
                 ],
             },
