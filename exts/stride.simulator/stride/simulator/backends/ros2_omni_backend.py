@@ -53,6 +53,9 @@ class ROS2OmniBackend(Backend):
         if not "TF_path" in prim_path.keys():
             prim_path["TF_path"] = "/World/Go1"
 
+        if not "namespace" in prim_path.keys():
+            prim_path["namespace"] = "go1"
+
         return prim_path
 
     def initialize_omnigraph(self):
@@ -73,6 +76,7 @@ class ROS2OmniBackend(Backend):
                     ("Lidar_Read", "omni.isaac.range_sensor.IsaacReadLidarPointCloud"),
                     ("Ros2_Lidar_Pub", "omni.isaac.ros2_bridge.ROS2PublishPointCloud"),
                     ("Ros2_tf_pub", "omni.isaac.ros2_bridge.ROS2PublishTransformTree"),
+                    ("Namespace_string", "omni.graph.nodes.ConstantString"),
                 ],
                 self.keys.SET_VALUES: [
                     ("Ros_Context.inputs:useDomainIDEnvVar", False),
@@ -84,6 +88,7 @@ class ROS2OmniBackend(Backend):
                     ("Ros2_Lidar_Pub.inputs:frameId", "sim_lidar"),
                     ("Ros2_Lidar_Pub.inputs:topicName", "point_cloud"),
                     ("Ros2_tf_pub.inputs:targetPrims", self._prim_path["TF_path"]),
+                    ("Namespace_string.inputs:value", self._prim_path["namespace"]),
                 ],
                 self.keys.CONNECT: [
                     ("PTick.outputs:tick", "Imu_Read.inputs:execIn"),
@@ -105,6 +110,7 @@ class ROS2OmniBackend(Backend):
                         "Sim_Time.outputs:simulationTime",
                         "Ros2_Imu_Pub.inputs:timeStamp",
                     ),
+                    ("Namespace_string.inputs:value", "Ros2_Imu_Pub.inputs:nodeNamespace"),
                     ("PTick.outputs:tick", "Lidar_Read.inputs:execIn"),
                     ("Ros_Context.outputs:context", "Ros2_Lidar_Pub.inputs:context"),
                     ("Lidar_Read.outputs:execOut", "Ros2_Lidar_Pub.inputs:execIn"),
@@ -116,12 +122,14 @@ class ROS2OmniBackend(Backend):
                         "Sim_Time.outputs:simulationTime",
                         "Ros2_Lidar_Pub.inputs:timeStamp",
                     ),
+                    ("Namespace_string.inputs:value", "Ros2_Lidar_Pub.inputs:nodeNamespace"),
                     ("PTick.outputs:tick", "Ros2_tf_pub.inputs:execIn"),
                     ("Ros_Context.outputs:context", "Ros2_tf_pub.inputs:context"),
                     (
                         "Sim_Time.outputs:simulationTime",
                         "Ros2_tf_pub.inputs:timeStamp",
                     ),
+                    ("Namespace_string.inputs:value", "Ros2_tf_pub.inputs:nodeNamespace")
                 ],
             },
         )
